@@ -1,14 +1,18 @@
 class gameEntry:
 
-    def _init_ (self, teamA, teamB, finalScore):
-        self.teamA = teamA
-        self.teamB = teamB
-        self.finalScore = finalScore
-
-    def _init_ (self):
+    # 0- Date 1- Time (Not Needed) 2-Team1 3-Score1 4-Team2 5-Score2 
+    def __init__(self, array):
+        self.gameInfo = array
+        self.gameDate = self.gameInfo[0]
+        self.teamA = self.gameInfo[2]
+        self.teamB = self.gameInfo[4]
+        self.score1 = self.gameInfo[3]
+        self.score2 = self.gameInfo[5]
+    
+    def _init_(self):
+        self.gameInfo = None
+        self.gameDate = None
+        self.score1= None
+        self.score2 = None
         self.teamA = None
         self.teamB = None
-        self.finalScore = None
-
-    def setFinalScore(self, scoreA, scoreB):
-        self.finalScore = scoreA + scoreB
