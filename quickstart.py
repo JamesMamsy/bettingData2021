@@ -60,7 +60,7 @@ def main():
             gamesList.append(gameEntry(gameInfo))
 
     for game in gamesList:
-        print(game.gameDate + " " + game.teamA + "v"+ game.teamB + "\n")
+        print(game.printDate() + " " + game.teamA + " v "+ game.teamB + "\n")
 
 if __name__ == '__main__':
     main()
