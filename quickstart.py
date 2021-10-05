@@ -5,6 +5,9 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from gameEntry import gameEntry
+import requests
+import json
+from collections import namedtuple
 
 # If modifying these scopes, delete the file token.json.
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly']
@@ -33,6 +36,10 @@ def validateCredentials():
             token.write(creds.to_json())
     return creds
 
+
+def jsonDecoder(inDict):
+    return namedtuple('X', inDict.keys())(*inDict.values())
+
 def main():
     
     creds = validateCredentials()
@@ -59,8 +66,46 @@ def main():
                 gameInfo.append(item) # 0- Date 1- Time (Not Needed) 2-Team1 3-Score1 4-Team2 5-Score2 
             gamesList.append(gameEntry(gameInfo))
 
+    
+    headers = {
+    'x-rapidapi-host': "therundown-therundown-v1.p.rapidapi.com",
+    'x-rapidapi-key': "fc38ba7c2amshb4f7ac7fa53eec6p1572d9jsn3c5562ed234b"
+    }
+    scheduleURL = "https://therundown-therundown-v1.p.rapidapi.com/sports/4/schedule"
+    
+    #softbreak tmp
+    tmpI = 0
+    oldDate = ""
+
     for game in gamesList:
-        print(game.printDate() + " " + game.teamA + " v "+ game.teamB + "\n")
+        #Get the Date
+        #Request that date's schedule from the API
+        newDate = game.printDate()
+
+        #Check to make sure we arent pulling the same date
+        if(oldDate != newDate):
+            query = {"limit":"25", "from": game.printDate()}
+            response = requests.request("GET", scheduleURL, headers=headers, params=query)
+            scheduleObject = json.loads(response.text)
+
+        #Each game is represented by event,a dictionary
+        homeTeam = game.home.rsplit(' ', 1)[0]
+        awayTeam = game.visitor.rsplit(' ', 1)[0]
+        for event in scheduleObject['schedules']:
+
+            #Compare home and away teams, if it's the same, save the event ID
+            if(homeTeam == event["home_team"] and awayTeam == event["away_team"]):
+               print(event["event_id"])
+               game.eventID  = event["event_id"]
+
+        oldDate = newDate
+        #Compare each event to the current game
+        #Once proper eventID is found, query again for the event's odds
+        #Write those odds, to the spreadsheet (might save for different loop)
+        tmpI += 1
+        if tmpI > 2:
+            break
+        
 
 if __name__ == '__main__':
     main()
